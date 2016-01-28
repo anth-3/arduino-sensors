@@ -32,7 +32,7 @@ void setup() {
     Serial.begin(9600);
 
     sprintf(buf, "Hygrometer Test...%s", HYGROMETER_TEST_VERSION);
-    Serial.println(output);
+    Serial.println(buf);
     
     sprintf(buf, "Sensor on pin %s", HYGROMETER_SENSOR_PIN_STR);
     Serial.println(buf);
@@ -58,7 +58,7 @@ void setup() {
 
 /* Do this over and over and over and over... */
 void loop() {
-    char output[40];        // This is our output buffer
+    char buf[40];           // This is our output buffer
     uint32_t garduinoTime;  // The current time on the Arduino
 
     /* 
@@ -81,8 +81,8 @@ void loop() {
         digitalWrite(HYGROMETER_VOLTAGE_PIN, LOW);
         Serial.print(".\n");
         
-        sprintf(output, "Moisture Reading: %d", sensorData.moisture);
-        Serial.println(output);
+        sprintf(buf, "Moisture Reading: %d", sensorData.moisture);
+        Serial.println(buf);
     }
 
     lastTimeCheck = garduinoTime;
