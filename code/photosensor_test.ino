@@ -11,8 +11,9 @@
 
 #include <Arduino.h>
 
-#define PHOTOSENSOR_PIN           A1        // Module will listen on Analog Pin 1
-#define PHOTOSENSOR_TEST_VERSION  "v0.1.3"  // Version of this test file
+#define PHOTOSENSOR_PIN             A1        // Module will listen on Analog Pin 1
+#define PHOTOSENSOR_PIN_STR         "A1"
+#define PHOTOSENSOR_TEST_VERSION    "v0.1.3"  // Version of this test sketch
 
 #define RL_SEC                1000          // Number of milliseconds in a second
 #define PHOTOSENSOR_INTERVAL  10 * RL_SEC   // Interval in milliseconds between photocell readings
@@ -31,7 +32,7 @@ void setup() {
     sprintf(buf, "Photosensor Test...%s", PHOTOSENSOR_TEST_VERSION);
     Serial.println(buf);
 
-    sprintf(buf, "Sensor on pin %s", PHOTOSENSOR_PIN);
+    sprintf(buf, "Sensor on pin %s", PHOTOSENSOR_PIN_STR);
     Serial.println(buf);
     /* Setup the pin to listen for data on */
     pinMode(PHOTOSENSOR_PIN, INPUT_PULLUP);
