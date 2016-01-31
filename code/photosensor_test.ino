@@ -17,7 +17,7 @@
 
 #define RL_SEC                1000          // Number of milliseconds in a second
 #define PHOTOSENSOR_INTERVAL  10 * RL_SEC   // Interval in milliseconds between photocell readings
-#define RAW_DATA_CHECKS       5             // Number of raw data checks to aggregate a value on
+#define RAW_DATA_CHECKS       5             // Number of raw data checks to average a value on
 
 uint32_t lastTimeCheck;     // The time of the last check in the loop()
 struct Sensors {            // Struct to hold the sensor data
@@ -51,6 +51,8 @@ void setup() {
 void loop() {
     char buf[40];           // This is our output buffer
     uint32_t garduinoTime;  // The current time on the Arduino
+    uint16_t temp;
+    uint8_t i;
   
     /* 
      * Since we are looking at particular intervals, the Arduino does not need
@@ -63,14 +65,15 @@ void loop() {
     if ((garduinoTime - lastTimeCheck) > PHOTOSENSOR_INTERVAL) {
         Serial.print("Checking light levels.");
 
-        for (uint8_t i = 0; i < RAW_DATA_CHECKS; i++) {
+        /* Grab multiple readings and average a value */
+        for (i = 0; i < RAW_DATA_CHECKS; i++) {
             sensorData.rawLight[i] = analogRead(PHOTOSENSOR_PIN);
             Serial.print(".\n");
             delay(100);
         }
 
-        uint16_t temp = 0;
-        for (uint8_t i = 0; i < RAW_DATA_CHECKS; i++) {
+        temp = 0;
+        for (i = 0; i < RAW_DATA_CHECKS; i++) {
             temp += sensorData.rawLight[i];
             Serial.print(".\n");
         }
