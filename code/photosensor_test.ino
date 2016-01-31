@@ -13,14 +13,16 @@
 
 #define PHOTOSENSOR_PIN             A1        // Module will listen on Analog Pin 1
 #define PHOTOSENSOR_PIN_STR         "A1"
-#define PHOTOSENSOR_TEST_VERSION    "v0.1.3"  // Version of this test sketch
+#define PHOTOSENSOR_TEST_VERSION    "v0.1.5"  // Version of this test sketch
 
 #define RL_SEC                1000          // Number of milliseconds in a second
 #define PHOTOSENSOR_INTERVAL  10 * RL_SEC   // Interval in milliseconds between photocell readings
+#define RAW_DATA_CHECKS       5             // Number of raw data checks to aggregate a value on
 
 uint32_t lastTimeCheck;     // The time of the last check in the loop()
 struct Sensors {            // Struct to hold the sensor data
-    uint8_t light;
+    uint16_t light;         // Need 16-bit integer as the sensor data is 0 - 1024, 8-bit is not big enough
+    uint16_t rawLight[RAW_DATA_CHECKS];
 } sensorData;
 
 /* Do all of the setup stuff here */
@@ -60,8 +62,21 @@ void loop() {
     /* Should we query the photocell for data yet? */
     if ((garduinoTime - lastTimeCheck) > PHOTOSENSOR_INTERVAL) {
         Serial.print("Checking light levels.");
-        sensorData.light = analogRead(PHOTOSENSOR_PIN);
+
+        for (uint8_t i = 0; i < RAW_DATA_CHECKS; i++) {
+            sensorData.rawLight[i] = analogRead(PHOTOSENSOR_PIN);
+            Serial.print(".\n");
+            delay(100);
+        }
+
+        uint16_t temp = 0;
+        for (uint8_t i = 0; i < RAW_DATA_CHECKS; i++) {
+            temp += sensorData.rawLight[i];
+            Serial.print(".\n");
+        }
+        sensorData.light = temp / RAW_DATA_CHECKS;
         Serial.print(".\n");
+        delay(100);
 
         sprintf(buf, "Light Reading: %d", sensorData.light);
         Serial.println(buf);
@@ -69,3 +84,4 @@ void loop() {
 
     lastTimeCheck = garduinoTime;
 }
+
