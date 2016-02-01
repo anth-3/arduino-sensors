@@ -15,14 +15,16 @@
 #define HYGROMETER_SENSOR_PIN       A0          // Module will listen on Analog Pin 0
 #define HYGROMETER_SENSOR_PIN_STR   "A0"
 #define HYGROMETER_VOLTAGE_PIN      13          // Voltage will be controlled on Digital Pin 13
-#define HYGROMETER_TEST_VERSION     "v0.1.3"    // Version of this test sketch
+#define HYGROMETER_TEST_VERSION     "v0.1.4"    // Version of this test sketch
 
 #define RL_SEC              1000            // Number of milliseconds in a second
 #define HYGROMETER_INTERVAL 60 * RL_SEC     // Interval in milliseconds between moisture readings
+#define RAW_DATA_CHECKS     3               // Number of raw checks to average a value on
 
 uint32_t lastTimeCheck;     // The time of the last check in the loop()
 struct Sensors {            // Struct to hold the sensor data
-    uint8_t moisture;  
+    uint16_t moisture;      // Need a 16-bit integer as sensor data is 0 - 1024, 8-bit is not big enough
+    uint16_t rawMoisture[RAW_DATA_CHECKS];
 } sensorData;
 
 /* Do all of the setup stuff here */
@@ -60,6 +62,8 @@ void setup() {
 void loop() {
     char buf[40];           // This is our output buffer
     uint32_t garduinoTime;  // The current time on the Arduino
+    uint16_t moistureReadings;
+    uint8_t i;
 
     /* 
      * Since we are looking at particular intervals, the Arduino does not need
@@ -71,16 +75,30 @@ void loop() {
     /* Should we query the hygrometer for data yet? */
     if ((garduinoTime - lastTimeCheck) > HYGROMETER_INTERVAL) {
         Serial.print("Checking moisture levels");
-        /* Turn on the hygrometer sensor */
-        digitalWrite(HYGROMETER_VOLTAGE_PIN, HIGH);
-        Serial.print(".");
-        delay(20);
-        sensorData.moisture = analogRead(HYGROMETER_SENSOR_PIN);
-        Serial.print(".");
-        /* Turn off the hygrometer sensor */
-        digitalWrite(HYGROMETER_VOLTAGE_PIN, LOW);
-        Serial.print(".\n");
+
+        /* Grab multiple readings and average a value */
+        for (i = 0; i < RAW_DATA_CHECKS; i++) {
+            /* Turn on the hygrometer sensor */
+            digitalWrite(HYGROMETER_VOLTAGE_PIN, HIGH);
+            Serial.print(".");
+            delay(20);
+            sensorData.rawMoisture[i] = analogRead(HYGROMETER_SENSOR_PIN);
+            Serial.print(".");
+            /* Turn off the hygrometer sensor */
+            digitalWrite(HYGROMETER_VOLTAGE_PIN, LOW);
+            Serial.print(".");
+            delay(100);
+        }
         
+        moistureReadings = 0;
+        for (i = 0; i < RAW_DATA_CHECKS; i++) {
+            moistureReadings += sensorData.rawMoisture[i];
+            Serial.print(".");
+        }
+        sensorData.moisture = moistureReadings / RAW_DATA_CHECKS;
+        Serial.println(".");
+        delay(100);
+
         sprintf(buf, "Moisture Reading: %d", sensorData.moisture);
         Serial.println(buf);
     }

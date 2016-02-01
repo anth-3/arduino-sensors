@@ -68,17 +68,17 @@ void loop() {
         /* Grab multiple readings and average a value */
         for (i = 0; i < RAW_DATA_CHECKS; i++) {
             sensorData.rawLight[i] = analogRead(PHOTOSENSOR_PIN);
-            Serial.print(".\n");
+            Serial.print(".");
             delay(100);
         }
 
         temp = 0;
         for (i = 0; i < RAW_DATA_CHECKS; i++) {
             temp += sensorData.rawLight[i];
-            Serial.print(".\n");
+            Serial.print(".");
         }
         sensorData.light = temp / RAW_DATA_CHECKS;
-        Serial.print(".\n");
+        Serial.println(".");
         delay(100);
 
         sprintf(buf, "Light Reading: %d", sensorData.light);
